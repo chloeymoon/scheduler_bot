@@ -34,7 +34,11 @@ app.post('/', function(req, res){
   // tells which button is clicked (if clicked canclled or ok)
 })
 
+<<<<<<< HEAD
+var port = process.env.PORT || 80;
+=======
 var port = process.env.PORT || 3000;
+>>>>>>> d1bf45321ddbaf557e897bfa16762262ae4aef6b
 app.listen(port)
 console.log("Express started on port", port)
 
