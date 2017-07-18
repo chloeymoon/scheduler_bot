@@ -2,6 +2,8 @@ var RtmClient = require('@slack/client').RtmClient;
 var WebClient = require('@slack/client').WebClient
 var CLIENT_EVENTS = require('@slack/client').CLIENT_EVENTS;
 var axios = require('axios')
+var { User } = require('./models/models')
+
 
 var bot_token = process.env.SLACK_BOT_TOKEN || '';
 
@@ -27,47 +29,67 @@ rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, function () {
 });
 
 rtm.on("message", function(message) {
-  axios.get('https://api.api.ai/api/query', {
-    headers: {
-      "Authorization": `Bearer ${process.env.API_AI_TOKEN}`
-    },
-    params: {
-      v: '20150910',
-      lang: 'en',
-      timezone: '2017-07-17T16:19:24-0700',
-      query: message.text,
-      sessionId: message.user
+  User.findOne({slackId: message.user})
+  .then (function(user){
+    if (!user) {
+      return new User({
+        slackId: message.user,
+        slackDmId: message.channel
+      }).save()
     }
+    return user
   })
-  .then(function(response) {
-    console.log(response)
-    if(response.data.result.actionIncomplete) {
-    rtm.sendMessage(response.data.result.fulfillment.speech, message.channel)
-  } else {
-    web.chat.postMessage(message.channel, `Creating reminder for ${response.data.result.parameters.subject} on ${response.data.result.parameters.date}`,
-      { "attachments": [
-        {
-          "fallback": "Upgrade your Slack client to use messages like these.",
-          "color": "3AA3E3",
-          "actions": [
-            {
-              "id": "1",
-              "name": "confirmation",
-              "text": "Yes",
-              "type": "button"
-            },
-            {
-              "id": "2",
-              "name": "confirmation",
-              "text": "No",
-              "type": "button"
-            }
-          ]
-        }
-      ]
+  .then(function(user) {
+    console.log('USER IS', user);
+    if(!user.google) {
+      rtm.sendMessage(
+        `Hello, this is Schedule Bot. In order to schedule reminders for you, I need to access your Google Calendar.
+          Please visit http://localhost:3000/`)
     }
-  )
-}
+    rtm.sendMessage('Your id is' + user._id, message.channel)
+    return;
+    axios.get('https://api.api.ai/api/query', {
+      headers: {
+        "Authorization": `Bearer ${process.env.API_AI_TOKEN}`
+      },
+      params: {
+        v: '20150910',
+        lang: 'en',
+        timezone: '2017-07-17T16:19:24-0700',
+        query: message.text,
+        sessionId: message.user
+      }
+    })
+    .then(function(response) {
+      console.log(response)
+      if(response.data.result.actionIncomplete) {
+      rtm.sendMessage(response.data.result.fulfillment.speech, message.channel)
+    } else {
+      web.chat.postMessage(message.channel, `Creating reminder for ${response.data.result.parameters.subject} on ${response.data.result.parameters.date}`, message.user,
+        { "attachments": [
+          {
+            "fallback": "Upgrade your Slack client to use messages like these.",
+            "color": "3AA3E3",
+            "actions": [
+              {
+                "id": "1",
+                "name": "confirmation",
+                "text": "Yes",
+                "type": "button"
+              },
+              {
+                "id": "2",
+                "name": "confirmation",
+                "text": "No",
+                "type": "button"
+              }
+            ]
+          }
+        ]
+      }
+    )
+  }
+  })
 })
   .catch(function(err) {
     console.log("Error", err.message)

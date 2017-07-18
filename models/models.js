@@ -1,21 +1,22 @@
 var mongoose = require('mongoose')
+mongoose.Promise = global.Promise;
+mongoose.connect(process.env.MONGODB_URI);
 
 var userSchema = mongoose.Schema({
   slackId: {
     type: String,
     required: true
   },
-  slackname: {
+  slackDmId: {
     type: String,
     required: true
   },
-  googleProfile: {
-    type: String,
-  }
+  google: {}
 });
 
 
 var User = mongoose.model('User', userSchema)
+
 module.exports= {
   User: User
 }
