@@ -24,7 +24,8 @@ app.use(express.static(path.join(__dirname, 'public')))
 ////figure out /slack/interactive b/c you need to change url on slack website
 app.post('/', function(req, res){
   var payload = JSON.parse(req.body.payload);
-  console.log(payload);
+  console.log("payload", payload)
+  console.log("req.body", req.body);
   if(payload.actions[0].value === 'true'){
     res.send('Created reminder! :white_check_mark:');
   } else {

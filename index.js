@@ -57,12 +57,14 @@ rtm.on("message", function(message) {
               "name": "confirmation",
               "text": "Yes",
               "type": "button",
+              "value": "true"
             },
             {
               "id": "2",
               "name": "confirmation",
               "text": "No",
               "type": "button",
+              "value": "false"
             }
           ]
         }
