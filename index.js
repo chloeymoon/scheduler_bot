@@ -81,7 +81,7 @@ rtm.on("message", function(message) {
     )
   }
 })
-})
+}) ///fjiewjreoiwjwoifj
   .catch(function(err) {
     console.log("Error", err.message)
   })
