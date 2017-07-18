@@ -3,6 +3,13 @@ var WebClient = require('@slack/client').WebClient
 var CLIENT_EVENTS = require('@slack/client').CLIENT_EVENTS;
 var axios = require('axios')
 var { User } = require('./models/models')
+
+
+var mongoose = require('mongoose')
+mongoose.Promise = global.Promise;
+mongoose.connect(process.env.MONGODB_URI);
+
+
 var bot_token = process.env.SLACK_BOT_TOKEN || '';
 var rtm = new RtmClient(bot_token);
 var web = new WebClient(bot_token)
@@ -23,7 +30,7 @@ rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, function () {
 rtm.on("message", function(message) {
   // console.log(message)
   User.findOne({slackId: message.user})
-  .then (function(user){
+  .then(function(user){
     if(!user) {
       return new User({
         slackId: message.user,
@@ -54,37 +61,31 @@ rtm.on("message", function(message) {
       return;
     } else {
       web.chat.postMessage(message.channel, `Create reminder for ${response.data.result.parameters.subject} on ${response.data.result.parameters.date}`,
-        { 'as_user': true,
-          "attachments": [
-          {
-            "callback_id": "select_simple_1234",
-            "fallback": "Upgrade your Slack client to use messages like these.",
-            "id": 1,
-            "color": "3AA3E3",
+        //{ "as_user": "true",
+    {"attachments": [
+        {
+            "fallback": "You are unable to choose a game",
+            "callback_id": "confirmation",
+            "color": "#3AA3E3",
+            "attachment_type": "default",
             "actions": [
-              {
-                "id": "1",
-                "name": "confirmation",
-                "text": "Yes",
-                "type": "button",
-                "value" : "true"
-              },
-              {
-                "id": "2",
-                "name": "confirmation",
-                "text": "No",
-                "type": "button",
-                "value" : "false"
-              }
-            ]
-          }
-        ]
-      }
-    )
-    // return;
-  }
-})
-})
+                {
+                    "name": "confirmation",
+                    "text": "Yes",
+                    "type": "button",
+                    "value": "yes"
+                },
+                {
+                    "name": "confirmation",
+                    "text": "No",
+                    "type": "button",
+                    "value": "no"
+                }
+            ]}
+          ]})
+        }
+      })
+    })
   .catch(function(err) {
     console.log("Error", err.message)
   })

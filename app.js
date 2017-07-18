@@ -3,6 +3,11 @@ var express = require('express');
 var path = require('path');
 var app = express();
 
+
+var mongoose = require('mongoose')
+mongoose.Promise = global.Promise;
+mongoose.connect(process.env.MONGODB_URI);
+
 var hbs = require('express-handlebars')({
   defaultLayout: 'main',
   extname: '.hbs'
