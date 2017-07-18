@@ -12,7 +12,7 @@ app.engine('hbs', hbs);
 app.set('view engine', 'hbs')
 
 ///// requiring botttttttt
-require('./bot')
+require('./index.js')
 // so app.js requires bot
 
 var bodyParser = require('body-parser')
@@ -20,9 +20,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(express.static(path.join(__dirname, 'public')))
 
-app.get('/', function(req, res){
-  res.render('index')
-})
 
 ////figure out /slack/interactive b/c you need to change url on slack website
 app.post('slack/interactive', function(req, res){
@@ -36,6 +33,8 @@ app.post('slack/interactive', function(req, res){
   // tells which button is clicked (if clicked canclled or ok)
 })
 
-var port = process.env.PORT || 3000;
+var port = process.env.PORT || 80;
+app.listen(port)
+console.log("Express started on port", port)
 
 module.exports = app;
