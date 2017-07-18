@@ -3,6 +3,11 @@ var express = require('express');
 var path = require('path');
 var app = express();
 
+
+var mongoose = require('mongoose')
+mongoose.Promise = global.Promise;
+mongoose.connect(process.env.MONGODB_URI);
+
 var hbs = require('express-handlebars')({
   defaultLayout: 'main',
   extname: '.hbs'
@@ -26,7 +31,7 @@ app.post('/', function(req, res){
   var payload = JSON.parse(req.body.payload);
   console.log("payload", payload)
   console.log("req.body", req.body);
-  if(payload.actions[0].value === 'true'){
+  if(payload.actions[0].value === 'yes'){
     res.send('Created reminder! :white_check_mark:');
   } else {
     res.send('Cancelled :x:');
@@ -35,7 +40,6 @@ app.post('/', function(req, res){
 })
 
 var port = process.env.PORT || 3000;
-
 app.listen(port)
 console.log("Express started on port", port)
 
