@@ -20,7 +20,7 @@ rtm.on(CLIENT_EVENTS.RTM.AUTHENTICATED, (rtmStartData) => {
 
 
 
-//curl 'https://api.api.ai/api/query?v=20150910&query=remind%20me%20to%20do%20laundry%20tomorrow&lang=en&sessionId=f2f27537-7ce4-43ca-9853-9f4ccb957521&timezone=2017-07-17T16:19:24-0700' -H 'Authorization:Bearer e919c82598b54f8fa522bf1b2bad61e8'
+
 // you need to wait for the client to fully connect before you can send messages
 rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, function () {
   rtm.sendMessage("Hello!", channel);
