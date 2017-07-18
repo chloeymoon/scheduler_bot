@@ -17,6 +17,7 @@ rtm.on(CLIENT_EVENTS.RTM.AUTHENTICATED, (rtmStartData) => {
 // you need to wait for the client to fully connect before you can send messages
 rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, function () {
   console.log('connected')
+  rtm.sendMessage('Hi guys getyolifetogether!', channel)
 });
 rtm.on("message", function(message) {
   console.log(message)
@@ -32,7 +33,7 @@ rtm.on("message", function(message) {
   })
   .then(function(user) {
     console.log('USER IS', user);
-    rtm.sendMessage('Your id is'+ user._id, message.channel)
+    // rtm.sendMessage('Your id is'+ user._id, message.channel)
     axios.get('https://api.api.ai/api/query', {
       headers: {
         "Authorization": `Bearer ${process.env.API_AI_TOKEN}`
