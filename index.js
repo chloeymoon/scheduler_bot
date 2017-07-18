@@ -62,7 +62,8 @@ rtm.on("message", function(message) {
       rtm.sendMessage(response.data.result.fulfillment.speech, message.channel)
     } else {
       web.chat.postMessage(message.channel, `Create reminder for ${response.data.result.parameters.subject} on ${response.data.result.parameters.date}`,
-        { "attachments": [
+        { "as_user": true,
+          "attachments": [
           {
             "fallback": "Upgrade your Slack client to use messages like these.",
             "callback_id": "confirmation",
