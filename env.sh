@@ -1,3 +1,0 @@
-
-export SLACK_BOT_TOKEN='xoxb-215124260887-G6ipYW2BzhtthxuOFaQnUTuD'
-export API_AI_TOKEN='e919c82598b54f8fa522bf1b2bad61e8'
