@@ -47,22 +47,20 @@ rtm.on("message", function(message) {
     web.chat.postMessage(message.channel, `Creating reminder for ${response.data.result.parameters.subject} on ${response.data.result.parameters.date}`,
       { "attachments": [
         {
-          "callback_id": "select_simple_1234",
           "fallback": "Upgrade your Slack client to use messages like these.",
-          "id": 1,
           "color": "3AA3E3",
           "actions": [
             {
               "id": "1",
               "name": "confirmation",
               "text": "Yes",
-              "type": "button",
+              "type": "button"
             },
             {
               "id": "2",
               "name": "confirmation",
               "text": "No",
-              "type": "button",
+              "type": "button"
             }
           ]
         }
@@ -72,7 +70,7 @@ rtm.on("message", function(message) {
 }
 })
   .catch(function(err) {
-    console.log("Error")
+    console.log("Error", err.message)
   })
 })
 
