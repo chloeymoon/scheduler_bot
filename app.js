@@ -20,7 +20,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(express.static(path.join(__dirname, 'public')))
 
-
+app.get('/', function(req, res){
+  res.send('helllloooooo')
+})
 ////figure out /slack/interactive b/c you need to change url on slack website
 app.post('/', function(req, res){
   var payload = JSON.parse(req.body.payload);
@@ -33,7 +35,15 @@ app.post('/', function(req, res){
   // tells which button is clicked (if clicked canclled or ok)
 })
 
-var port = process.env.PORT || 80;
+// var google=require('googleapis')
+// var OAuth2 = google.auth.OAuth2
+// var { User } = require('./models');
+//
+// function getGoogleAuth(){
+//   return new OAuth2
+// }
+
+var port = process.env.PORT || 3000;
 app.listen(port)
 console.log("Express started on port", port)
 

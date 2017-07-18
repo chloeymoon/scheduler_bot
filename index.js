@@ -19,12 +19,27 @@ rtm.on(CLIENT_EVENTS.RTM.AUTHENTICATED, (rtmStartData) => {
 });
 
 
-
+//mongoose model: user
+// var { User } = require('./models')
+// same as var User = require('./models').User
 
 // you need to wait for the client to fully connect before you can send messages
 rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, function () {
-  rtm.sendMessage("Hello!", channel);
+  // rtm.sendMessage("Hello!", channel);
 });
+
+
+
+// User.findOne({slackId: msg.user})
+// .then(funciton(user){
+//   if(! user){
+//     return new User({
+//       slackId: msg.user,
+//       slackDmId: msg.channel
+//     }).save()
+//   }
+//   return user;
+// })
 
 rtm.on("message", function(message) {
   axios.get('https://api.api.ai/api/query', {
@@ -45,7 +60,8 @@ rtm.on("message", function(message) {
     rtm.sendMessage(response.data.result.fulfillment.speech, message.channel)
   } else {
     web.chat.postMessage(message.channel, `Creating reminder for ${response.data.result.parameters.subject} on ${response.data.result.parameters.date}`,
-      { "attachments": [
+      { 'as_user': true,
+        "attachments": [
         {
           "callback_id": "select_simple_1234",
           "fallback": "Upgrade your Slack client to use messages like these.",
@@ -78,3 +94,7 @@ rtm.on("message", function(message) {
 
 
 rtm.start();
+
+module.exports = {
+  rtm
+}
