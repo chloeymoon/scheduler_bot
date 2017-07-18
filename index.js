@@ -29,9 +29,10 @@ rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, function () {
 });
 
 rtm.on("message", function(message) {
+  console.log(message)
   User.findOne({slackId: message.user})
   .then (function(user){
-    if (!user) {
+    if(!user) {
       return new User({
         slackId: message.user,
         slackDmId: message.channel
@@ -39,15 +40,10 @@ rtm.on("message", function(message) {
     }
     return user
   })
+
   .then(function(user) {
     console.log('USER IS', user);
-    if(!user.google) {
-      rtm.sendMessage(
-        `Hello, this is Schedule Bot. In order to schedule reminders for you, I need to access your Google Calendar.
-          Please visit http://localhost:3000/`)
-    }
-    rtm.sendMessage('Your id is' + user._id, message.channel)
-    return;
+    rtm.sendMessage('Your id is'+ user._id, message.channel)
     axios.get('https://api.api.ai/api/query', {
       headers: {
         "Authorization": `Bearer ${process.env.API_AI_TOKEN}`
@@ -65,7 +61,7 @@ rtm.on("message", function(message) {
       if(response.data.result.actionIncomplete) {
       rtm.sendMessage(response.data.result.fulfillment.speech, message.channel)
     } else {
-      web.chat.postMessage(message.channel, `Creating reminder for ${response.data.result.parameters.subject} on ${response.data.result.parameters.date}`, message.user,
+      web.chat.postMessage(message.channel, `Create reminder for ${response.data.result.parameters.subject} on ${response.data.result.parameters.date}`,
         { "attachments": [
           {
             "fallback": "Upgrade your Slack client to use messages like these.",
@@ -89,7 +85,7 @@ rtm.on("message", function(message) {
       }
     )
   }
-  })
+})
 })
   .catch(function(err) {
     console.log("Error", err.message)
