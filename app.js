@@ -1,7 +1,7 @@
 "use strict";
-var express = require('express')
-var path = require('path')
-var app = express()
+var express = require('express');
+var path = require('path');
+var app = express();
 
 var hbs = require('express-handlebars')({
   defaultLayout: 'main',
@@ -17,7 +17,7 @@ require('./bot')
 
 var bodyParser = require('body-parser')
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false}))
+app.use(bodyParser.urlencoded({ extended: false }))
 app.use(express.static(path.join(__dirname, 'public')))
 
 app.get('/', function(req, res){
@@ -35,5 +35,7 @@ app.post('slack/interactive', function(req, res){
   }
   // tells which button is clicked (if clicked canclled or ok)
 })
+
+var port = process.env.PORT || 3000;
 
 module.exports = app;
