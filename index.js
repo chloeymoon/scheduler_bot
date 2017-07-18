@@ -25,7 +25,7 @@ rtm.on(CLIENT_EVENTS.RTM.AUTHENTICATED, (rtmStartData) => {
 
 // you need to wait for the client to fully connect before you can send messages
 rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, function () {
-  rtm.sendMessage("Hello!", channel);
+  console.log('connected')
 });
 
 rtm.on("message", function(message) {
@@ -65,6 +65,7 @@ rtm.on("message", function(message) {
         { "attachments": [
           {
             "fallback": "Upgrade your Slack client to use messages like these.",
+            "callback_id": "confirmation",
             "color": "3AA3E3",
             "actions": [
               {
