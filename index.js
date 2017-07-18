@@ -1,10 +1,12 @@
 var RtmClient = require('@slack/client').RtmClient;
+var WebClient = require('@slack/client').WebClient
 var CLIENT_EVENTS = require('@slack/client').CLIENT_EVENTS;
 var axios = require('axios')
 
 var bot_token = process.env.SLACK_BOT_TOKEN || '';
 
 var rtm = new RtmClient(bot_token);
+var web = new WebClient(bot_token)
 
 let channel;
 
@@ -16,22 +18,59 @@ rtm.on(CLIENT_EVENTS.RTM.AUTHENTICATED, (rtmStartData) => {
   console.log(`Logged in as ${rtmStartData.self.name} of team ${rtmStartData.team.name}, but not yet connected to a channel`);
 });
 
+
+
+//curl 'https://api.api.ai/api/query?v=20150910&query=remind%20me%20to%20do%20laundry%20tomorrow&lang=en&sessionId=f2f27537-7ce4-43ca-9853-9f4ccb957521&timezone=2017-07-17T16:19:24-0700' -H 'Authorization:Bearer e919c82598b54f8fa522bf1b2bad61e8'
 // you need to wait for the client to fully connect before you can send messages
 rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, function () {
   rtm.sendMessage("Hello!", channel);
 });
 
 rtm.on("message", function(message) {
-  console.log(message)
-  const query = message.text.replace(' ', '%20')
-  console.log(query)
-  axios.get(`https://api.api.ai/api/query?v=20150910&query=${query}&lang=en&sessionId=f2f27537-7ce4-43ca-9853-9f4ccb957521&timezone=2017-07-17T16:19:24-0700`,
-    { headers : {
-      "Authorization": "Bearer e919c82598b54f8fa522bf1b2bad61e8"
-    }})
-  .then(function(response) {
-    rtm.sendMessage(response.data.result.fulfillment.speech, message.channel)
+  axios.get('https://api.api.ai/api/query', {
+    headers: {
+      "Authorization": `Bearer ${process.env.API_AI_TOKEN}`
+    },
+    params: {
+      v: '20150910',
+      lang: 'en',
+      timezone: '2017-07-17T16:19:24-0700',
+      query: message.text,
+      sessionId: message.user
+    }
   })
+  .then(function(response) {
+    console.log(response)
+    if(response.data.result.actionIncomplete) {
+    rtm.sendMessage(response.data.result.fulfillment.speech, message.channel)
+  } else {
+    web.chat.postMessage(message.channel, `Creating reminder for ${response.data.result.parameters.subject} on ${response.data.result.parameters.date}`,
+      { "attachments": [
+        {
+          "callback_id": "select_simple_1234",
+          "fallback": "Upgrade your Slack client to use messages like these.",
+          "id": 1,
+          "color": "3AA3E3",
+          "actions": [
+            {
+              "id": "1",
+              "name": "confirmation",
+              "text": "Yes",
+              "type": "button",
+            },
+            {
+              "id": "2",
+              "name": "confirmation",
+              "text": "No",
+              "type": "button",
+            }
+          ]
+        }
+      ]
+    }
+  )
+}
+})
   .catch(function(err) {
     console.log("Error")
   })
