@@ -52,7 +52,7 @@ rtm.on("message", function(message) {
       rtm.sendMessage(response.data.result.fulfillment.speech, message.channel)
     } else {
       web.chat.postMessage(message.channel, `Create reminder for ${response.data.result.parameters.subject} on ${response.data.result.parameters.date}`,
-        { 'as_user': true,
+        { 'as_user': false,
           "attachments": [
           {
             "callback_id": "select_simple_1234",
