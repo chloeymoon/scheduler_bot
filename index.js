@@ -79,7 +79,7 @@ rtm.on("message", function(message) {
                 "name": "confirmation",
                 "text": "No",
                 "type": "button",
-                "value": "true"
+                "value": "false"
               }
             ]
           }
