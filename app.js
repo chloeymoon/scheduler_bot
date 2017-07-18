@@ -36,6 +36,6 @@ app.post('slack/interactive', function(req, res){
   // tells which button is clicked (if clicked canclled or ok)
 })
 
-var port = process.env.PORT || 3000;
+var port = 3000;
 
 module.exports = app;
