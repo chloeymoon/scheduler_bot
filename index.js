@@ -3,31 +3,21 @@ var WebClient = require('@slack/client').WebClient
 var CLIENT_EVENTS = require('@slack/client').CLIENT_EVENTS;
 var axios = require('axios')
 var { User } = require('./models/models')
-
-
 var bot_token = process.env.SLACK_BOT_TOKEN || '';
-
 var rtm = new RtmClient(bot_token);
 var web = new WebClient(bot_token)
-
 let channel;
-
 // The client will emit an RTM.AUTHENTICATED event on successful connection, with the `rtm.start` payload
 rtm.on(CLIENT_EVENTS.RTM.AUTHENTICATED, (rtmStartData) => {
   for (const c of rtmStartData.channels) {
-	  if (c.is_member && c.name ==='general') { channel = c.id }
+      if (c.is_member && c.name ==='general') { channel = c.id }
   }
   console.log(`Logged in as ${rtmStartData.self.name} of team ${rtmStartData.team.name}, but not yet connected to a channel`);
 });
-
-
-
-
 // you need to wait for the client to fully connect before you can send messages
 rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, function () {
   console.log('connected')
 });
-
 rtm.on("message", function(message) {
   console.log(message)
   User.findOne({slackId: message.user})
@@ -40,7 +30,6 @@ rtm.on("message", function(message) {
     }
     return user
   })
-
   .then(function(user) {
     console.log('USER IS', user);
     rtm.sendMessage('Your id is'+ user._id, message.channel)
@@ -62,10 +51,12 @@ rtm.on("message", function(message) {
       rtm.sendMessage(response.data.result.fulfillment.speech, message.channel)
     } else {
       web.chat.postMessage(message.channel, `Create reminder for ${response.data.result.parameters.subject} on ${response.data.result.parameters.date}`,
-        { "attachments": [
+        { 'as_user': true,
+          "attachments": [
           {
+            "callback_id": "select_simple_1234",
             "fallback": "Upgrade your Slack client to use messages like these.",
-            "callback_id": "confirmation",
+            "id": 1,
             "color": "3AA3E3",
             "actions": [
               {
@@ -73,14 +64,14 @@ rtm.on("message", function(message) {
                 "name": "confirmation",
                 "text": "Yes",
                 "type": "button",
-                "value": "true"
+                "value" : "true"
               },
               {
                 "id": "2",
                 "name": "confirmation",
                 "text": "No",
                 "type": "button",
-                "value": "false"
+                "value" : "false"
               }
             ]
           }
@@ -94,6 +85,4 @@ rtm.on("message", function(message) {
     console.log("Error", err.message)
   })
 })
-
-
 rtm.start();
