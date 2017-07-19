@@ -147,15 +147,16 @@ app.post('/', function(req, res){
       }
     })
   } else {
-    res.send('Cancelled :x:');
-    user.pending.pending = false;
-    user.pending.subject= '';
-    user.pending.date='';
-    user.save(function(err) {
-      if(err) {
-        console.log("ERRRORRR")
-      }
-      //res.send('Created reminder! :white_check_mark:')
+    User.findOne({ slackId: payload.user.id })
+    .then(function(user) {
+      res.send('Cancelled :x:');
+      user.pending.pending = false;
+      user.pending.subject= '';
+      user.pending.date='';
+      user.save(function(err) {
+        if(err) {
+          console.log("ERRRORRR")
+        }})
     })
   }
   // tells which button is clicked (if clicked canclled or ok)
