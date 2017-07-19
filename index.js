@@ -34,6 +34,10 @@ rtm.on("message", function(message) {
       return user
     })
     .then(function(user) {
+      if(!user.google) {
+        rtm.sendMessage('Knock knock, let me in click this link http://localhost:3000/connect?auth_id='+user._id, message.channel)
+      }
+      else {
       axios.get('https://api.api.ai/api/query', {
         headers: {
           "Authorization": `Bearer ${process.env.API_AI_TOKEN}`
@@ -88,6 +92,7 @@ rtm.on("message", function(message) {
               })
             }
           })
+        }
         })
         .catch(function(err) {
           console.log("Error", err.message)
