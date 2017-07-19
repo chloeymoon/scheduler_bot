@@ -42,7 +42,7 @@ rtm.on("message", function(message) {
     rtm.sendMessage('Your id is'+ user._id, message.channel)
     axios.get('https://api.api.ai/api/query', {
       headers: {
-        "Authorization": `Bearer ${process.env.API_AI_TOKEN}`
+        "Authorization": 'Bearer ${process.env.API_AI_TOKEN}'
       },
       params: {
         v: '20150910',
