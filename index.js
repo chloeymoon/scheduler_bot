@@ -19,14 +19,15 @@ rtm.on(CLIENT_EVENTS.RTM.AUTHENTICATED, (rtmStartData) => {
   for (const c of rtmStartData.channels) {
       if (c.is_member && c.name ==='general') { channel = c.id }
   }
-  console.log(`Logged in as ${rtmStartData.self.name} of team ${rtmStartData.team.name}, but not yet connected to a channel`);
+  // console.log(`Logged in as ${rtmStartData.self.name} of team ${rtmStartData.team.name}, but not yet connected to a channel`);
 });
 // you need to wait for the client to fully connect before you can send messages
 rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, function () {
-  console.log('connected')
+  // console.log('connected')
+  rtm.sendMessage('Hi guys getyolifetogether!', channel)
 });
 rtm.on("message", function(message) {
-  console.log(message)
+  // console.log(message)
   User.findOne({slackId: message.user})
   .then(function(user){
     if(!user) {
@@ -38,8 +39,8 @@ rtm.on("message", function(message) {
     return user
   })
   .then(function(user) {
-    console.log('USER IS', user);
-    rtm.sendMessage('Your id is'+ user._id, message.channel)
+    // console.log('USER IS', user);
+    // rtm.sendMessage('Your id is'+ user._id, message.channel)
     axios.get('https://api.api.ai/api/query', {
       headers: {
         "Authorization": 'Bearer ${process.env.API_AI_TOKEN}'
@@ -55,7 +56,8 @@ rtm.on("message", function(message) {
     .then(function(response) {
       console.log(response)
       if(response.data.result.actionIncomplete) {
-      rtm.sendMessage(response.data.result.fulfillment.speech, message.channel)
+      rtm.sendMessage(response.data.result.fulfillment.speech, message.channel);
+      return;
     } else {
       web.chat.postMessage(message.channel, `Create reminder for ${response.data.result.parameters.subject} on ${response.data.result.parameters.date}`,
         //{ "as_user": "true",
