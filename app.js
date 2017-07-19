@@ -27,6 +27,37 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(express.static(path.join(__dirname, 'public')))
 
+
+function start() {
+  // 2. Initialize the JavaScript client library.
+  gapi.client.init({
+    'apiKey': process.env.GOOGLE_API_KEY,
+    // Your API key will be automatically added to the Discovery Document URLs.
+    'discoveryDocs': ['https://people.googleapis.com/$discovery/rest'],
+    // clientId and scope are optional if auth is not required.
+    'clientId': process.env.GOOGLE_CLIENT_ID,
+    'scope': 'profile',
+  }).then(function() {
+    // 3. Initialize and make the API request.
+    return gapi.client.people.people.get({
+      'resourceName': 'people/me',
+      'requestMask.includeField': 'person.names'
+    });
+  }).then(function(response) {
+    console.log(response.result);
+  }, function(reason) {
+    console.log('Error: ' + reason.result.error.message);
+  });
+};
+// 1. Load the JavaScript client library.
+gapi.load('client', start);
+
+
+
+
+
+
+
 var google = require('googleapis');
 var OAuth2 = google.auth.OAuth2;
 function getGoogleAuth() {
@@ -38,7 +69,7 @@ function getGoogleAuth() {
 }
 
 const GOOGLE_SCOPE = ['https://www.googleapis.com/auth/userinfo.profile',
-  'https://www.googleapis.com/auth/calendar'];
+'https://www.googleapis.com/auth/calendar'];
 
 app.get('/connect', function(req,res){
   var userId = req.query.auth_id
@@ -86,7 +117,6 @@ app.get('/connect/callback', function(req,res){
           })
           .then(function(mongoUser) {
             res.send('You are connected to Google Calendar');
-            rtm.sendMessage('You are connected to Google Calendar', mongoUser.slackDmId);
           });
         }
       });
@@ -96,21 +126,58 @@ app.get('/connect/callback', function(req,res){
 ////figure out /slack/interactive b/c you need to change url on slack website
 app.post('/', function(req, res){
   var payload = JSON.parse(req.body.payload);
-  console.log(payload)
   if(payload.actions[0].value === 'yes'){
     User.findOne({ slackId: payload.user.id })
-      .then(function(user) {
-        user.pending.pending = false;
-        user.pending.subject= '';
-        user.pending.date='';
-        user.save(function(err) {
-          if(err) {
-            console.log("ERRRORRR")
-          } else {
-            res.send('Created reminder! :white_check_mark:')
-          }
-        })
+    .then(function(user) {
+      user.pending.pending = false;
+      user.pending.subject= '';
+      user.pending.date='';
+      return user.save(function(err) {
+        if(err) {
+          console.log("ERRRORRR")
+        }
+        //res.send('Created reminder! :white_check_mark:')
       })
+    })
+    .then(function(user) {
+      var event = {
+        'summary': 'Google I/O 2015',
+        'location': '800 Howard St., San Francisco, CA 94103',
+        'description': 'A chance to hear more about Google\'s developer products.',
+        'start': {
+          'dateTime': '2017-07-19T09:00:00-07:00',
+          'timeZone': 'America/Los_Angeles'
+        },
+        'end': {
+          'dateTime': '2017-07-19T17:00:00-07:00',
+          'timeZone': 'America/Los_Angeles'
+        },
+        'recurrence': [
+          'RRULE:FREQ=DAILY;COUNT=2'
+        ],
+        'attendees': [
+          {'email': 'lpage@example.com'},
+          {'email': 'sbrin@example.com'}
+        ],
+        'reminders': {
+          'useDefault': false,
+          'overrides': [
+            {'method': 'email', 'minutes': 24 * 60},
+            {'method': 'popup', 'minutes': 10}
+          ]
+        }
+      };
+
+      var request = gapi.client.calendar.events.insert({
+        'calendarId': 'primary',
+        'resource': event
+      });
+
+      request.execute(function(event) {
+        appendPre('Event created: ' + event.htmlLink);
+      });
+      res.send('Created reminder! :white_check_mark:')
+    })
   } else {
     res.send('Cancelled :x:');
   }
