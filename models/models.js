@@ -11,12 +11,16 @@ var userSchema = mongoose.Schema({
     type: String,
     required: true
   },
-  google: {}
+  google: {},
+  pending: {
+    pending: Boolean,
+    subject: String,
+    date: String
+  }
 });
-
 
 var User = mongoose.model('User', userSchema)
 
-module.exports= {
+module.exports = {
   User: User
 }
