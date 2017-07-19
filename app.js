@@ -99,7 +99,15 @@ app.post('/', function(req, res){
   console.log(payload)
   if(payload.actions[0].value === 'yes'){
     User.findOne({ slackId: payload.user.id })
+    ////// delete date and subject
+
+    
       .then(function(user) {
+        //which user, google credentials, subject calender event, calender event date ~codealong~
+        console.log(user);
+        var googleAuth = getGoogleAuth();
+
+
         user.pending.pending = false;
         user.pending.subject= '';
         user.pending.date='';

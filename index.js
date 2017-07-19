@@ -35,7 +35,7 @@ rtm.on("message", function(message) {
     })
     .then(function(user) {
       if(!user.google) {
-        rtm.sendMessage('Knock knock, let me in click this link http://localhost:3000/connect?auth_id='+user._id, message.channel)
+        rtm.sendMessage('Knock knock, let me in click this link' + process.env.NGROK_URL+'/connect?auth_id='+user._id, message.channel)
       }
       else {
       axios.get('https://api.api.ai/api/query', {
