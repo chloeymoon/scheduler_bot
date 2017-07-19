@@ -27,6 +27,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(express.static(path.join(__dirname, 'public')))
 
+
 var google = require('googleapis');
 var OAuth2 = google.auth.OAuth2;
 function getGoogleAuth() {
@@ -38,7 +39,7 @@ function getGoogleAuth() {
 }
 
 const GOOGLE_SCOPE = ['https://www.googleapis.com/auth/userinfo.profile',
-  'https://www.googleapis.com/auth/calendar'];
+'https://www.googleapis.com/auth/calendar'];
 
 app.get('/connect', function(req,res){
   var userId = req.query.auth_id
@@ -86,33 +87,76 @@ app.get('/connect/callback', function(req,res){
           })
           .then(function(mongoUser) {
             res.send('You are connected to Google Calendar');
-            rtm.sendMessage('You are connected to Google Calendar', mongoUser.slackDmId);
           });
         }
       });
     }
   });
 })
+
+
+var moment= require('moment')
 ////figure out /slack/interactive b/c you need to change url on slack website
 app.post('/', function(req, res){
   var payload = JSON.parse(req.body.payload);
-  console.log(payload)
   if(payload.actions[0].value === 'yes'){
     User.findOne({ slackId: payload.user.id })
-      .then(function(user) {
-        user.pending.pending = false;
-        user.pending.subject= '';
-        user.pending.date='';
-        user.save(function(err) {
-          if(err) {
-            console.log("ERRRORRR")
-          } else {
-            res.send('Created reminder! :white_check_mark:')
+    .then(function(user) {
+      console.log("USER!!!", user.google)
+      var googleAuth = getGoogleAuth()
+      var credentials = Object.assign({}, user.google)
+      delete credentials.profile_id
+      delete credentials.profile_name
+      googleAuth.setCredentials(credentials)
+      var calendar = google.calendar('v3')
+      calendar.events.insert({
+        auth: googleAuth,
+        calendarId: 'primary',
+        resource: {
+          summary: user.pending.subject,
+          start: {
+            date: user.pending.date,
+            timeZone: 'America/Los_Angeles'
+          },
+          end: {
+            date: moment(user.pending.date).add(1, 'days').format('YYYY-MM-DD'),
+            timeZone: 'America/Los_Angeles'
           }
-        })
+        }
+      }, function (err, results) {
+        if(err) {
+          console.log("ERRROR")
+        } else {
+          res.send('Created reminder! :white_check_mark:')
+          user.pending.pending = false;
+          user.pending.subject= '';
+          user.pending.date='';
+          user.save(function(err) {
+            if(err) {
+              console.log("ERRRORRR")
+            }
+            //res.send('Created reminder! :white_check_mark:')
+          })
+        }
       })
+      return;
+    })
+    .catch(function(err) {
+      if(err) {
+        console.log("CATCH ERROR", err)
+      }
+    })
   } else {
     res.send('Cancelled :x:');
+    user.pending.pending = false;
+    user.pending.subject= '';
+    user.pending.date='';
+    user.save(function(err) {
+      if(err) {
+        console.log("ERRRORRR")
+      }
+      //res.send('Created reminder! :white_check_mark:')
+    })
   }
   // tells which button is clicked (if clicked canclled or ok)
 })
