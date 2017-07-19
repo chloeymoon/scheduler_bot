@@ -3,20 +3,13 @@ var WebClient = require('@slack/client').WebClient
 var CLIENT_EVENTS = require('@slack/client').CLIENT_EVENTS;
 var axios = require('axios')
 var { User } = require('./models/models')
-
-
 var mongoose = require('mongoose')
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGODB_URI);
-
-
 var bot_token = process.env.SLACK_BOT_TOKEN || '';
-
 var rtm = new RtmClient(bot_token);
 var web = new WebClient(bot_token)
-
 let channel;
-
 // The client will emit an RTM.AUTHENTICATED event on successful connection, with the `rtm.start` payload
 rtm.on(CLIENT_EVENTS.RTM.AUTHENTICATED, (rtmStartData) => {
   for (const c of rtmStartData.channels) {
@@ -24,15 +17,10 @@ rtm.on(CLIENT_EVENTS.RTM.AUTHENTICATED, (rtmStartData) => {
   }
   console.log(`Logged in as ${rtmStartData.self.name} of team ${rtmStartData.team.name}, but not yet connected to a channel`);
 });
-
-
-
-
 // you need to wait for the client to fully connect before you can send messages
 rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, function () {
   console.log('connected')
 });
-
 rtm.on("message", function(message) {
   if (message.user) {
     User.findOne({ slackId: message.user })
@@ -107,6 +95,4 @@ rtm.on("message", function(message) {
       }
       return;
     })
-
-
     rtm.start();
