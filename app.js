@@ -8,6 +8,7 @@ var { User } = require('./models/models')
 var mongoose = require('mongoose')
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGODB_URI);
+var { User } = require('./models/models')
 
 var hbs = require('express-handlebars')({
   defaultLayout: 'main',
@@ -94,10 +95,21 @@ app.get('/connect/callback', function(req,res){
 ////figure out /slack/interactive b/c you need to change url on slack website
 app.post('/', function(req, res){
   var payload = JSON.parse(req.body.payload);
-  // console.log("payload", payload)
-  // console.log("req.body", req.body);
-  if(payload.actions[0].value === 'true'){
-    res.send('Created reminder! :white_check_mark:');
+  console.log(payload)
+  if(payload.actions[0].value === 'yes'){
+    User.findOne({ slackId: payload.user.id })
+      .then(function(user) {
+        user.pending.pending = false;
+        user.pending.subject= '';
+        user.pending.date='';
+        user.save(function(err) {
+          if(err) {
+            console.log("ERRRORRR")
+          } else {
+            res.send('Created reminder! :white_check_mark:')
+          }
+        })
+      })
   } else {
     res.send('Cancelled :x:');
   }

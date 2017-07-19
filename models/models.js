@@ -11,9 +11,13 @@ var userSchema = mongoose.Schema({
     type: String,
     required: true
   },
-  google: {}
+  google: {},
+  pending: {
+    pending: Boolean,
+    subject: String,
+    date: String
+  }
 });
-
 
 var User = mongoose.model('User', userSchema)
 
