@@ -41,7 +41,8 @@ const GOOGLE_SCOPE = ['https://www.googleapis.com/auth/userinfo.profile',
   'https://www.googleapis.com/auth/calendar'];
 
 app.get('/connect', function(req,res){
-  var userId = req.query.user
+  var userId = req.query.auth_id
+  console.log("USERID IS HERE", userId)
   if (!userId){
     res.redirect(400).send('Missing user id')
   } else {
