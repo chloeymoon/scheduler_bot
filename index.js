@@ -2,7 +2,8 @@ var RtmClient = require('@slack/client').RtmClient;
 var WebClient = require('@slack/client').WebClient
 var CLIENT_EVENTS = require('@slack/client').CLIENT_EVENTS;
 var axios = require('axios')
-var { User } = require('./models/models')
+var User = require('./models/models').User
+var Reminder = require('./models/models').Reminder
 var mongoose = require('mongoose')
 mongoose.connect(process.env.MONGODB_URI);
 mongoose.Promise = global.Promise;
@@ -190,4 +191,11 @@ rtm.on("message", function(message) {
             })
           }
         })
-        rtm.start();
+      }
+      return;
+    })
+    rtm.start();
+
+    module.exports = {
+      rtm, web
+    }
