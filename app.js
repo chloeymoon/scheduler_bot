@@ -2,13 +2,14 @@
 var express = require('express');
 var path = require('path');
 var app = express();
-var { User } = require('./models/models')
+var { User, Reminder } = require('./models/models')
 
 
 var mongoose = require('mongoose')
 mongoose.connect(process.env.MONGODB_URI)
 mongoose.Promise = global.Promise;
 var { User } = require('./models/models')
+
 
 var hbs = require('express-handlebars')({
   defaultLayout: 'main',
@@ -99,7 +100,9 @@ var moment= require('moment')
 app.post('/', function(req, res){
   var payload = JSON.parse(req.body.payload);
   if(payload.actions[0].value === 'yes'){
+    //delete date and subject from user
     User.findOne({ slackId: payload.user.id })
+
     .then(function(user) {
       console.log("USER!!!", user.google)
       var googleAuth = getGoogleAuth()
@@ -108,6 +111,7 @@ app.post('/', function(req, res){
       delete credentials.profile_name
       googleAuth.setCredentials(credentials)
       var calendar = google.calendar('v3')
+
       if (payload.callback_id === "remind") {
 
         calendar.events.insert({
@@ -123,6 +127,20 @@ app.post('/', function(req, res){
               date: moment(user.pending.date).add(1, 'days').format('YYYY-MM-DD'),
               timeZone: 'America/Los_Angeles'
             }
+=======
+      calendar.events.insert({
+        auth: googleAuth,
+        calendarId: 'primary',
+        resource: {
+          summary: user.pending.subject,
+          start: {
+            date: user.pending.date,
+            timeZone: 'America/Los_Angeles'
+          },
+          end: {
+            date: moment(user.pending.date).add(1, 'days').format('YYYY-MM-DD'),
+            timeZone: 'America/Los_Angeles'
+          }
           }
         }, function (err, results) {
           if(err) {
