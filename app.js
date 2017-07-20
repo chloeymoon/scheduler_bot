@@ -113,21 +113,6 @@ app.post('/', function(req, res){
       var calendar = google.calendar('v3')
 
       if (payload.callback_id === "remind") {
-
-        calendar.events.insert({
-          auth: googleAuth,
-          calendarId: 'primary',
-          resource: {
-            summary: user.pending.subject,
-            start: {
-              date: user.pending.date,
-              timeZone: 'America/Los_Angeles'
-            },
-            end: {
-              date: moment(user.pending.date).add(1, 'days').format('YYYY-MM-DD'),
-              timeZone: 'America/Los_Angeles'
-            }
-=======
       calendar.events.insert({
         auth: googleAuth,
         calendarId: 'primary',
