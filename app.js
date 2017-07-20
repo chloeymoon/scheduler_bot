@@ -43,7 +43,6 @@ const GOOGLE_SCOPE = ['https://www.googleapis.com/auth/userinfo.profile',
 
 app.get('/connect', function(req,res){
   var userId = req.query.auth_id
-  console.log("USERID IS HERE", userId)
   if (!userId){
     res.redirect(400).send('Missing user id')
   } else {
@@ -115,11 +114,11 @@ app.post('/', function(req, res){
         resource: {
           summary: user.pending.subject,
           start: {
-            date: user.pending.date,
+            dateTime: user.pending.date+user.pending.time,
             timeZone: 'America/Los_Angeles'
           },
           end: {
-            date: moment(user.pending.date).add(1, 'days').format('YYYY-MM-DD'),
+            dateTime: moment(user.pending.date).add(1, 'days').format('YYYY-MM-DD')+user.pending.time,
             timeZone: 'America/Los_Angeles'
           }
         }
@@ -131,6 +130,8 @@ app.post('/', function(req, res){
           user.pending.pending = false;
           user.pending.subject= '';
           user.pending.date='';
+          user.pending.invitees = [];
+          user.pending.time = '';
           user.save(function(err) {
             if(err) {
               console.log("ERRRORRR")
@@ -153,6 +154,8 @@ app.post('/', function(req, res){
       user.pending.pending = false;
       user.pending.subject= '';
       user.pending.date='';
+      user.pending.invitees = [];
+      user.pending.time = '';
       user.save(function(err) {
         if(err) {
           console.log("ERRRORRR")

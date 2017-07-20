@@ -15,7 +15,10 @@ var userSchema = mongoose.Schema({
   pending: {
     pending: Boolean,
     subject: String,
-    date: String
+    date: String,
+    invitees: Array,
+    time: String,
+    endtime: String
   }
 });
 
