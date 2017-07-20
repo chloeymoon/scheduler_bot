@@ -42,7 +42,7 @@ rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, function () {
     console.log(reminders)
     for (var i = 0; i < reminders.length; i++) {
       console.log(reminders[i].subject)
-      rtm.sendMessage("'" + reminders[i].subject+ "' is due soon! Hurry! Yay! We did something!! So you should do something too!!!!!!!", reminders[i].user.slackDmId)
+      rtm.sendMessage("'" + reminders[i].subject+ "' is due tomorrow!", reminders[i].user.slackDmId)
     }
   })
   .catch(function(err){
@@ -50,15 +50,29 @@ rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, function () {
   })
 });
 
-User.findOne()
-  .then(function(user){
-    web.chat.postMessage(user.slackDmId,
-      'Currrent itme is ' + new Date(),
-    function(){
-      process.exit(0) // how you kill the script
-      //so after sending the message, it's gonna end
-    })
-  })
+Reminder.find({date: tomorrow}).populate("user")
+.then(function(reminders){
+  console.log('reminders array is here', reminders)
+  for (var i = 0; i < reminders.length; i++) {
+    console.log(reminders[i].subject)
+    rtm.sendMessage("'" + reminders[i].subject+ "' is due today!", reminders[i].user.slackDmId)
+    reminders[i].remove()
+  }
+})
+.catch(function(err){
+  console.log(err)
+})
+});
+
+// User.findOne()
+//   .then(function(user){
+//     web.chat.postMessage(user.slackDmId,
+//       'Currrent itme is ' + new Date()),
+//     function(){
+//       process.exit(0) // how you kill the script
+//       //so after sending the message, it's gonna end
+//     })
+//   })
 
 rtm.start()
 

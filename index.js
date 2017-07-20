@@ -35,10 +35,6 @@ rtm.on("message", function(message) {
       return user
     })
     .then(function(user) {
-      if(user.date){
-        rtm.sendMessage('Please confirm or cancel previous request', mesage.channel)
-        return;
-      }
       if(!user.google) {
         rtm.sendMessage('Knock knock, let me in click this link' +process.env.NGROK_URL+'/connect?auth_id='+user._id, message.channel)
       } else if (user.google.expiry_date < Date.now()) {
@@ -116,6 +112,5 @@ rtm.on("message", function(message) {
     rtm.start();
 
     module.exports = {
-      rtm,
-      web
+      rtm, web
     }
