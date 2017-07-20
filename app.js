@@ -2,13 +2,12 @@
 var express = require('express');
 var path = require('path');
 var app = express();
-var { User } = require('./models/models')
+var { User, Reminder } = require('./models/models')
 
 
 var mongoose = require('mongoose')
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGODB_URI);
-var { User } = require('./models/models')
 
 var hbs = require('express-handlebars')({
   defaultLayout: 'main',
@@ -100,6 +99,7 @@ var moment= require('moment')
 app.post('/', function(req, res){
   var payload = JSON.parse(req.body.payload);
   if(payload.actions[0].value === 'yes'){
+    //delete date and subject from user
     User.findOne({ slackId: payload.user.id })
     .then(function(user) {
       console.log("USER!!!", user.google)
