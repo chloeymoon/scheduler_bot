@@ -10,7 +10,7 @@ var bot_token = process.env.SLACK_BOT_TOKEN || '';
 var rtm = new RtmClient(bot_token);
 var web = new WebClient(bot_token)
 
-  var moment= require('moment')
+var moment= require('moment')
 
 let channel;
 // The client will emit an RTM.AUTHENTICATED event on successful connection, with the `rtm.start` payload
@@ -49,6 +49,7 @@ rtm.on("message", function(message) {
         var slackId = ''
         var slackId2 = ''
         var inviteesArr = []
+        var emails = []
         while(newMessage.indexOf("<") !== -1) {
           console.log("BEGINNING OF LOOP", newMessage)
           slackId = newMessage.substring(newMessage.indexOf("<"), newMessage.indexOf("<")+12)
@@ -59,16 +60,22 @@ rtm.on("message", function(message) {
           var realName = userProfile.profile.first_name || userProfile.profile.real_name
           newMessage = newMessage.replace(slackId, realName)
           inviteesArr.push({
-            slackId: slackId2,
-            displayName: realName,
+            displayName: userProfile.profile.real_name,
             email: userProfile.profile.email
           })
+          emails.push(userProfile.profile.email)
           console.log("THIS IS NEW MESSAGE", newMessage)
           slackId = ''
           slackId2 = ''
+          console.log("THIS IS INVITESSARR", inviteesArr)
+          console.log("THIS IS EMAILS", emails)
         }
 
-        console.log(inviteesArr)
+        user.pending.invitees = inviteesArr
+        console.log(user.pending.invitees)
+        user.pending.emails = emails
+        console.log(user.pending.emails)
+        user.save()
 
         axios.get('https://api.api.ai/api/query', {
           headers: {
@@ -95,7 +102,6 @@ rtm.on("message", function(message) {
               user.pending.pending = true;
               user.pending.subject = response.data.result.parameters.subject;
               user.pending.date = response.data.result.parameters.date;
-              user.pending.time = 'T07:00:00-00:00'
               user.save(function (err) {
                 if (err) {
                   console.log("ERROR!!!!")
@@ -104,8 +110,8 @@ rtm.on("message", function(message) {
                     { "as_user": "false",
                     "attachments": [
                       {
-                        "fallback": "You are unable to choose a game",
-                        "callback_id": "confirmation",
+                        "fallback": "You are unable to confirm a reminder",
+                        "callback_id": "remind",
                         "color": "#3AA3E3",
                         "attachment_type": "default",
                         "actions": [
@@ -137,21 +143,20 @@ rtm.on("message", function(message) {
                 else {
                   user.pending.pending = true;
                   user.pending.subject = response.data.result.parameters.subject;
-                  user.pending.date = response.data.result.parameters.date;
                   user.pending.invitees = inviteesArr;
-                  user.pending.time = moment.utc(response.data.result.parameters.date-time).format('YYYY-MM-DDTHH:mm:ss-07:00')
-                  user.pending.endtime = moment.utc(response.data.result.parameters.date-time).add(1,'hours').format('YYYY-MM-DDTHH:mm:ss-07:00')
+                  user.pending.emails = emails
+                  user.pending.datetime = moment.utc(response.data.result.parameters.datetime).format('YYYY-MM-DDTHH:mm:ss-07:00')
+                  //user.pending.endtime = moment.utc(response.data.result.parameters.datetime).add(1,'hours').format('YYYY-MM-DDTHH:mm:ss-07:00')
                   user.save(function (err) {
                     if (err) {
                       console.log("ERROR!!!!")
                     } else {
-                      web.chat.postMessage(message.channel, `Create meeting with ${response.data.result.parameters.invitees}
-                        for ${response.data.result.parameters.subject} on ${response.data.result.parameters.date} at ${response.data.result.parameters.time}`,
+                      web.chat.postMessage(message.channel, `Create meeting with ${response.data.result.parameters.invitees} for ${user.pending.subject} on ${user.pending.datetime}`,
                         { "as_user": "false",
                         "attachments": [
                           {
-                            "fallback": "You are unable to choose a game",
-                            "callback_id": "confirmation",
+                            "fallback": "You are unable to confirm the meeting",
+                            "callback_id": "meeting",
                             "color": "#3AA3E3",
                             "attachment_type": "default",
                             "actions": [
@@ -178,11 +183,11 @@ rtm.on("message", function(message) {
                   console.log("Error11111", err.message)
                 })
               }
+              return;
             })
             .catch(function(err) {
               console.log("Error2222", err.message)
             })
           }
-          return;
         })
         rtm.start();

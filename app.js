@@ -108,39 +108,73 @@ app.post('/', function(req, res){
       delete credentials.profile_name
       googleAuth.setCredentials(credentials)
       var calendar = google.calendar('v3')
-      calendar.events.insert({
-        auth: googleAuth,
-        calendarId: 'primary',
-        resource: {
-          summary: user.pending.subject,
-          attendees: //FILL THIS IN!!
-          start: {
-            dateTime: user.pending.date+user.pending.time,
-            timeZone: 'America/Los_Angeles'
-          },
-          end: {
-            dateTime: moment(user.pending.date).add(1, 'days').format('YYYY-MM-DD')+user.pending.time,
-            timeZone: 'America/Los_Angeles'
-          }
-        }
-      }, function (err, results) {
-        if(err) {
-          console.log("ERRROR")
-        } else {
-          res.send('Created reminder! :white_check_mark:')
-          user.pending.pending = false;
-          user.pending.subject= '';
-          user.pending.date='';
-          user.pending.invitees = [];
-          user.pending.time = '';
-          user.save(function(err) {
-            if(err) {
-              console.log("ERRRORRR")
+      if (payload.callback_id === "remind") {
+
+        calendar.events.insert({
+          auth: googleAuth,
+          calendarId: 'primary',
+          resource: {
+            summary: user.pending.subject,
+            start: {
+              date: user.pending.date,
+              timeZone: 'America/Los_Angeles'
+            },
+            end: {
+              date: moment(user.pending.date).add(1, 'days').format('YYYY-MM-DD'),
+              timeZone: 'America/Los_Angeles'
             }
-            //res.send('Created reminder! :white_check_mark:')
-          })
-        }
-      })
+          }
+        }, function (err, results) {
+          if(err) {
+            console.log("ERRROR")
+          } else {
+            res.send('Created reminder! :white_check_mark:')
+            user.pending.pending = false;
+            user.pending.subject= '';
+            user.pending.date='';
+            user.save(function(err) {
+              if(err) {
+                console.log("ERRRORRR")
+              }
+              //res.send('Created reminder! :white_check_mark:')
+            })
+          }
+        })
+      } else { //MEETINGS
+        calendar.events.insert({
+          auth: googleAuth,
+          calendarId: 'primary',
+          resource: {
+            summary: user.pending.subject,
+            attendees: user.pending.invitees,
+            start: {
+              dateTime: moment.utc(user.pending.datetime).format('YYYY-MM-DDTHH:mm:ss-07:00'),
+              timeZone: 'America/Los_Angeles'
+            },
+            end: {
+              dateTime: moment.utc(user.pending.datetime).add(1,'hours').format('YYYY-MM-DDTHH:mm:ss-07:00'),
+              timeZone: 'America/Los_Angeles'
+            }
+          }
+        }, function (err, results) {
+          if(err) {
+            console.log("ERRROR")
+          } else {
+            res.send('Created meeting! :white_check_mark:')
+            user.pending.pending = false;
+            user.pending.subject= '';
+            user.pending.datetime='';
+            user.pending.invitees = [];
+            user.pending.emails =[]
+            user.save(function(err) {
+              if(err) {
+                console.log("ERRRORRR")
+              }
+              //res.send('Created reminder! :white_check_mark:')
+            })
+          }
+        })
+      }
       return;
     })
     .catch(function(err) {
@@ -152,22 +186,18 @@ app.post('/', function(req, res){
     User.findOne({ slackId: payload.user.id })
     .then(function(user) {
       res.send('Cancelled :x:');
-      user.pending.pending = false;
-      user.pending.subject= '';
-      user.pending.date='';
-      user.pending.invitees = [];
-      user.pending.time = '';
+      user.pending = {};
       user.save(function(err) {
         if(err) {
           console.log("ERRRORRR")
         }})
-    })
-  }
-  // tells which button is clicked (if clicked canclled or ok)
-})
+      })
+    }
+    // tells which button is clicked (if clicked canclled or ok)
+  })
 
-var port = process.env.PORT || 3000;
-app.listen(port)
-// console.log("Express started on port", port)
+  var port = process.env.PORT || 3000;
+  app.listen(port)
+  // console.log("Express started on port", port)
 
-module.exports = app;
+  module.exports = app;

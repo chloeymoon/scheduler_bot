@@ -17,8 +17,8 @@ var userSchema = mongoose.Schema({
     subject: String,
     date: String,
     invitees: Array,
-    time: String,
-    endtime: String
+    datetime: String,
+    emails: Array
   }
 });
 
