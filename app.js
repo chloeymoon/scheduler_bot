@@ -6,8 +6,10 @@ var { User, Reminder } = require('./models/models')
 
 
 var mongoose = require('mongoose')
+mongoose.connect(process.env.MONGODB_URI)
 mongoose.Promise = global.Promise;
-mongoose.connect(process.env.MONGODB_URI);
+var { User } = require('./models/models')
+
 
 var hbs = require('express-handlebars')({
   defaultLayout: 'main',
@@ -42,7 +44,6 @@ const GOOGLE_SCOPE = ['https://www.googleapis.com/auth/userinfo.profile',
 
 app.get('/connect', function(req,res){
   var userId = req.query.auth_id
-  console.log("USERID IS HERE", userId)
   if (!userId){
     res.redirect(400).send('Missing user id')
   } else {
@@ -101,7 +102,7 @@ app.post('/', function(req, res){
   if(payload.actions[0].value === 'yes'){
     //delete date and subject from user
     User.findOne({ slackId: payload.user.id })
-<<<<<<< HEAD
+
     .then(function(user) {
       console.log("USER!!!", user.google)
       var googleAuth = getGoogleAuth()
@@ -110,6 +111,23 @@ app.post('/', function(req, res){
       delete credentials.profile_name
       googleAuth.setCredentials(credentials)
       var calendar = google.calendar('v3')
+
+      if (payload.callback_id === "remind") {
+
+        calendar.events.insert({
+          auth: googleAuth,
+          calendarId: 'primary',
+          resource: {
+            summary: user.pending.subject,
+            start: {
+              date: user.pending.date,
+              timeZone: 'America/Los_Angeles'
+            },
+            end: {
+              date: moment(user.pending.date).add(1, 'days').format('YYYY-MM-DD'),
+              timeZone: 'America/Los_Angeles'
+            }
+=======
       calendar.events.insert({
         auth: googleAuth,
         calendarId: 'primary',
@@ -122,43 +140,60 @@ app.post('/', function(req, res){
           end: {
             date: moment(user.pending.date).add(1, 'days').format('YYYY-MM-DD'),
             timeZone: 'America/Los_Angeles'
-=======
-    ////// delete date and subject
-
-    
-      .then(function(user) {
-        //which user, google credentials, subject calender event, calender event date ~codealong~
-        console.log(user);
-        var googleAuth = getGoogleAuth();
-
-
-        user.pending.pending = false;
-        user.pending.subject= '';
-        user.pending.date='';
-        user.save(function(err) {
+          }
+          }
+        }, function (err, results) {
           if(err) {
-            console.log("ERRRORRR")
+            console.log("ERRROR")
           } else {
             res.send('Created reminder! :white_check_mark:')
->>>>>>> 517f4a5bc9f0aba00f3eb99656b58297986fcfce
+            user.pending.pending = false;
+            user.pending.subject= '';
+            user.pending.date='';
+            user.save(function(err) {
+              if(err) {
+                console.log("ERRRORRR")
+              }
+              //res.send('Created reminder! :white_check_mark:')
+            })
           }
-        }
-      }, function (err, results) {
-        if(err) {
-          console.log("ERRROR")
-        } else {
-          res.send('Created reminder! :white_check_mark:')
-          user.pending.pending = false;
-          user.pending.subject= '';
-          user.pending.date='';
-          user.save(function(err) {
-            if(err) {
-              console.log("ERRRORRR")
+        })
+      } else { //MEETINGS
+        console.log("TIME IS HERE", user.pending.datetime)
+        calendar.events.insert({
+          auth: googleAuth,
+          calendarId: 'primary',
+          resource: {
+            summary: user.pending.subject,
+            attendees: user.pending.emails,
+            start: {
+              dateTime: moment.utc(user.pending.datetime).format('YYYY-MM-DDTHH:mm:ss-07:00'),
+              'timeZone': 'America/Los_Angeles'
+            },
+            end: {
+              dateTime: moment.utc(user.pending.datetime).add(1,'hours').format('YYYY-MM-DDTHH:mm:ss-07:00'),
+              'timeZone': 'America/Los_Angeles'
             }
-            //res.send('Created reminder! :white_check_mark:')
-          })
-        }
-      })
+          }
+        }, function (err, results) {
+          if(err) {
+            console.log("ERRROR")
+          } else {
+            res.send('Created meeting! :white_check_mark:')
+            user.pending.pending = false;
+            user.pending.subject= '';
+            user.pending.datetime='';
+            user.pending.invitees = [];
+            user.pending.emails =[]
+            user.save(function(err) {
+              if(err) {
+                console.log("ERRRORRR")
+              }
+              //res.send('Created reminder! :white_check_mark:')
+            })
+          }
+        })
+      }
       return;
     })
     .catch(function(err) {
@@ -170,20 +205,18 @@ app.post('/', function(req, res){
     User.findOne({ slackId: payload.user.id })
     .then(function(user) {
       res.send('Cancelled :x:');
-      user.pending.pending = false;
-      user.pending.subject= '';
-      user.pending.date='';
+      user.pending = {};
       user.save(function(err) {
         if(err) {
           console.log("ERRRORRR")
         }})
-    })
-  }
-  // tells which button is clicked (if clicked canclled or ok)
-})
+      })
+    }
+    // tells which button is clicked (if clicked canclled or ok)
+  })
 
-var port = process.env.PORT || 3000;
-app.listen(port)
-// console.log("Express started on port", port)
+  var port = process.env.PORT || 3000;
+  app.listen(port)
+  // console.log("Express started on port", port)
 
-module.exports = app;
+  module.exports = app;
