@@ -135,13 +135,12 @@ rtm.on("message", function(message) {
                   rtm.sendMessage("Please choose an option on the previous message to create a new meeting.", message.channel)
                 }
                 else {
-                  console.log(moment(response.data.result.parameters.time).add(1, 'hours'))
                   user.pending.pending = true;
                   user.pending.subject = response.data.result.parameters.subject;
                   user.pending.date = response.data.result.parameters.date;
-                  user.pending.invitees = response.data.result.parameters.invitees
-                  user.pending.time = response.data.result.parameters.time
-                  user.pending.endtime = moment(response.data.result.parameters.time).add(1, 'hours')
+                  user.pending.invitees = inviteesArr;
+                  user.pending.time = moment.utc(response.data.result.parameters.date-time).format('YYYY-MM-DDTHH:mm:ss-07:00')
+                  user.pending.endtime = moment.utc(response.data.result.parameters.date-time).add(1,'hours').format('YYYY-MM-DDTHH:mm:ss-07:00')
                   user.save(function (err) {
                     if (err) {
                       console.log("ERROR!!!!")
