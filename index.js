@@ -58,7 +58,11 @@ rtm.on("message", function(message) {
           // console.log("USER IS HERE", user)
           var realName = userProfile.profile.first_name || userProfile.profile.real_name
           newMessage = newMessage.replace(slackId, realName)
-          inviteesArr.push(slackId2)
+          inviteesArr.push({
+            slackId: slackId2,
+            displayName: realName,
+            email: userProfile.profile.email
+          })
           console.log("THIS IS NEW MESSAGE", newMessage)
           slackId = ''
           slackId2 = ''
