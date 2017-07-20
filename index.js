@@ -63,18 +63,18 @@ rtm.on("message", function(message) {
             displayName: userProfile.profile.real_name,
             email: userProfile.profile.email
           })
-          emails.push(userProfile.profile.email)
+          emails.push({'email':userProfile.profile.email})
           console.log("THIS IS NEW MESSAGE", newMessage)
           slackId = ''
           slackId2 = ''
           console.log("THIS IS INVITESSARR", inviteesArr)
           console.log("THIS IS EMAILS", emails)
         }
-
         user.pending.invitees = inviteesArr
         console.log(user.pending.invitees)
         user.pending.emails = emails
         console.log(user.pending.emails)
+        user.markModified("pending");
         user.save()
 
         axios.get('https://api.api.ai/api/query', {
@@ -84,7 +84,7 @@ rtm.on("message", function(message) {
           params: {
             v: '20150910',
             lang: 'en',
-            timezone: '2017-07-17T16:19:24-0700',
+            timezone: '2017-07-17T16:19:24-07:00',
             query: newMessage,
             sessionId: message.user
           }
@@ -145,7 +145,7 @@ rtm.on("message", function(message) {
                   user.pending.subject = response.data.result.parameters.subject;
                   user.pending.invitees = inviteesArr;
                   user.pending.emails = emails
-                  user.pending.datetime = moment.utc(response.data.result.parameters.datetime).format('YYYY-MM-DDTHH:mm:ss-07:00')
+                  user.pending.datetime = response.data.result.parameters.datetime
                   //user.pending.endtime = moment.utc(response.data.result.parameters.datetime).add(1,'hours').format('YYYY-MM-DDTHH:mm:ss-07:00')
                   user.save(function (err) {
                     if (err) {

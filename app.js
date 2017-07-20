@@ -141,19 +141,20 @@ app.post('/', function(req, res){
           }
         })
       } else { //MEETINGS
+        console.log("TIME IS HERE", user.pending.datetime)
         calendar.events.insert({
           auth: googleAuth,
           calendarId: 'primary',
           resource: {
             summary: user.pending.subject,
-            attendees: user.pending.invitees,
+            attendees: user.pending.emails,
             start: {
               dateTime: moment.utc(user.pending.datetime).format('YYYY-MM-DDTHH:mm:ss-07:00'),
-              timeZone: 'America/Los_Angeles'
+              'timeZone': 'America/Los_Angeles'
             },
             end: {
               dateTime: moment.utc(user.pending.datetime).add(1,'hours').format('YYYY-MM-DDTHH:mm:ss-07:00'),
-              timeZone: 'America/Los_Angeles'
+              'timeZone': 'America/Los_Angeles'
             }
           }
         }, function (err, results) {
