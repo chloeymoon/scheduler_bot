@@ -2,7 +2,8 @@ var RtmClient = require('@slack/client').RtmClient;
 var WebClient = require('@slack/client').WebClient
 var CLIENT_EVENTS = require('@slack/client').CLIENT_EVENTS;
 var axios = require('axios')
-var { User } = require('./models/models')
+var User = require('./models/models').User
+var Reminder = require('./models/models').Reminder
 var mongoose = require('mongoose')
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGODB_URI);
@@ -22,7 +23,8 @@ rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, function () {
   console.log('connected')
 });
 rtm.on("message", function(message) {
-  if (message.user) {
+  console.log('message is', message)
+  if (message.user === true && message.user !== 'U6C368JG7') {
     User.findOne({ slackId: message.user })
     .then(function(user){
       if(!user) {
@@ -40,6 +42,7 @@ rtm.on("message", function(message) {
         rtm.sendMessage('Knock knock, let me in click this link' +process.env.NGROK_URL+'/connect?auth_id='+user._id, message.channel)
       }
       else {
+
       axios.get('https://api.api.ai/api/query', {
         headers: {
           "Authorization": `Bearer ${process.env.API_AI_TOKEN}`
@@ -63,6 +66,11 @@ rtm.on("message", function(message) {
           user.pending.pending = true;
           user.pending.subject = response.data.result.parameters.subject;
           user.pending.date = response.data.result.parameters.date;
+          new Reminder({
+            subject: response.data.result.parameters.subject,
+            date: response.data.result.parameters.date,
+            user: user
+          }).save();
           user.save(function (err) {
             if (err) {
               console.log("ERROR!!!!")
@@ -103,3 +111,7 @@ rtm.on("message", function(message) {
       return;
     })
     rtm.start();
+
+    module.exports = {
+      rtm, web
+    }

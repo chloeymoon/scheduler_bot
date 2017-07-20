@@ -2,13 +2,12 @@
 var express = require('express');
 var path = require('path');
 var app = express();
-var { User } = require('./models/models')
+var { User, Reminder } = require('./models/models')
 
 
 var mongoose = require('mongoose')
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGODB_URI);
-var { User } = require('./models/models')
 
 var hbs = require('express-handlebars')({
   defaultLayout: 'main',
@@ -100,7 +99,9 @@ var moment= require('moment')
 app.post('/', function(req, res){
   var payload = JSON.parse(req.body.payload);
   if(payload.actions[0].value === 'yes'){
+    //delete date and subject from user
     User.findOne({ slackId: payload.user.id })
+<<<<<<< HEAD
     .then(function(user) {
       console.log("USER!!!", user.google)
       var googleAuth = getGoogleAuth()
@@ -121,6 +122,25 @@ app.post('/', function(req, res){
           end: {
             date: moment(user.pending.date).add(1, 'days').format('YYYY-MM-DD'),
             timeZone: 'America/Los_Angeles'
+=======
+    ////// delete date and subject
+
+    
+      .then(function(user) {
+        //which user, google credentials, subject calender event, calender event date ~codealong~
+        console.log(user);
+        var googleAuth = getGoogleAuth();
+
+
+        user.pending.pending = false;
+        user.pending.subject= '';
+        user.pending.date='';
+        user.save(function(err) {
+          if(err) {
+            console.log("ERRRORRR")
+          } else {
+            res.send('Created reminder! :white_check_mark:')
+>>>>>>> 517f4a5bc9f0aba00f3eb99656b58297986fcfce
           }
         }
       }, function (err, results) {
