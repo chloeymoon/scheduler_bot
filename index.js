@@ -2,8 +2,7 @@ var RtmClient = require('@slack/client').RtmClient;
 var WebClient = require('@slack/client').WebClient
 var CLIENT_EVENTS = require('@slack/client').CLIENT_EVENTS;
 var axios = require('axios')
-var User = require('./models/models').User
-var Reminder = require('./models/models').Reminder
+var { User } = require('./models/models')
 var mongoose = require('mongoose')
 mongoose.connect(process.env.MONGODB_URI);
 mongoose.Promise = global.Promise;
@@ -71,12 +70,16 @@ rtm.on("message", function(message) {
           console.log("THIS IS INVITESSARR", inviteesArr)
           console.log("THIS IS EMAILS", emails)
         }
+
         user.pending.invitees = inviteesArr
         console.log(user.pending.invitees)
         user.pending.emails = emails
         console.log(user.pending.emails)
-        user.markModified("pending");
-        user.save()
+        user.save(function(err){
+          if(err){
+            console.log('error in saving invitees and emails', err)
+          }
+        })
 
         axios.get('https://api.api.ai/api/query', {
           headers: {
@@ -85,7 +88,7 @@ rtm.on("message", function(message) {
           params: {
             v: '20150910',
             lang: 'en',
-            timezone: '2017-07-17T16:19:24-07:00',
+            timezone: '2017-07-17T16:19:24-0700',
             query: newMessage,
             sessionId: message.user
           }
@@ -146,7 +149,7 @@ rtm.on("message", function(message) {
                   user.pending.subject = response.data.result.parameters.subject;
                   user.pending.invitees = inviteesArr;
                   user.pending.emails = emails
-                  user.pending.datetime = response.data.result.parameters.datetime
+                  user.pending.datetime = moment.utc(response.data.result.parameters.datetime).format('YYYY-MM-DDTHH:mm:ss-07:00')
                   //user.pending.endtime = moment.utc(response.data.result.parameters.datetime).add(1,'hours').format('YYYY-MM-DDTHH:mm:ss-07:00')
                   user.save(function (err) {
                     if (err) {
@@ -191,11 +194,4 @@ rtm.on("message", function(message) {
             })
           }
         })
-      }
-      return;
-    })
-    rtm.start();
-
-    module.exports = {
-      rtm, web
-    }
+        rtm.start();
