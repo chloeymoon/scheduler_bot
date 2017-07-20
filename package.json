@@ -5,8 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+<<<<<<< HEAD
     "cron": "node cron",
     "start": "node app"
+=======
+    "cron": "node cron"
+>>>>>>> 517f4a5bc9f0aba00f3eb99656b58297986fcfce
   },
   "repository": {
     "type": "git",
