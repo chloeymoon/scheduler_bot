@@ -23,7 +23,8 @@ rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, function () {
   console.log('connected')
 });
 rtm.on("message", function(message) {
-  if (message.user) {
+  console.log('message is', message)
+  if (message.user === true && message.user !== 'U6C368JG7') {
     User.findOne({ slackId: message.user })
     .then(function(user){
       if(!user) {

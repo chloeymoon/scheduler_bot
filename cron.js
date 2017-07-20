@@ -1,6 +1,10 @@
 "use strict"
 
 console.log('hello im running')
+var express = require('express');
+var path = require('path');
+var cron = express();
+
 
 var RtmClient = require('@slack/client').RtmClient;
 var WebClient = require('@slack/client').WebClient
@@ -29,39 +33,43 @@ rtm.on(CLIENT_EVENTS.RTM.AUTHENTICATED, (rtmStartData) => {
 rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, function () {
   console.log('connected')
   //find all reminders that are due today or tomorrow
-  var today = new Date()
-  console.log('today is', today)
-  var today2 = new Date(today.getTime() - 24 * 60* 60 * 1000)
-  console.log('today2 is', today2)
-  var tomorrow = new Date(today.getTime() + 24 * 60* 60 * 1000)
-  console.log('tomorrow is', tomorrow)
-  //2017-07-19T21:49:24.506Z
+  var faketoday = new Date()
+  console.log('faketoday is', faketoday)
+  var realtoday = new Date(faketoday.getTime() - 7 * 60* 60 * 1000)
+  console.log('real today is', realtoday)
 
-  Reminder.find({date: {$gt: today2, $lt: tomorrow}}).populate("user")
+  var time = new Date().getTime();
+  var todaymidnight = new Date(time-time % (24*60*60*1000))
+  console.log('todaymidnight', todaymidnight)
+
+  var tomorrow = new Date(realtoday.getTime() + 24 * 60* 60 * 1000)
+  // console.log('tomorrow is', tomorrow)
+  //2017-07-19T21:49:24.506Z
+  var tomorrowmidnight = new Date(todaymidnight.getTime() + 24 * 60* 60 * 1000)
+  console.log('tomorrowmidnight', tomorrowmidnight)
+
+  Reminder.find({date: {$gte: todaymidnight, $lte: tomorrowmidnight}}).populate("user")
   .then(function(reminders){
-    console.log(reminders)
+    console.log('REMINDERS:::::::', reminders)
     for (var i = 0; i < reminders.length; i++) {
-      console.log(reminders[i].subject)
-      rtm.sendMessage("'" + reminders[i].subject+ "' is due tomorrow!", reminders[i].user.slackDmId)
+      if(reminders[i].date.toString() === todaymidnight.toString()){
+        console.log('today mightnight reminders', reminders[i].subject)
+        rtm.sendMessage("'" + reminders[i].subject+ "' is due today, deleting reminder!", reminders[i].user.slackDmId)
+      } else if(reminders[i].date.toString() === tomorrowmidnight.toString()){
+        rtm.sendMessage("'" + reminders[i].subject+ "' is due tomorrow!", reminders[i].user.slackDmId)
+        console.log('tomorrow mightnight reminders', reminders[i].subject)
+      } else {
+        newReminders.push(reminders[i])
+      }
     }
+    Reminder.remove({date: todaymidnight}, function(err){
+      if(err){console.log('ERROR NOT SAVE')}
+    })
+    return;
   })
   .catch(function(err){
     console.log(err)
   })
-});
-
-Reminder.find({date: tomorrow}).populate("user")
-.then(function(reminders){
-  console.log('reminders array is here', reminders)
-  for (var i = 0; i < reminders.length; i++) {
-    console.log(reminders[i].subject)
-    rtm.sendMessage("'" + reminders[i].subject+ "' is due today!", reminders[i].user.slackDmId)
-    reminders[i].remove()
-  }
-})
-.catch(function(err){
-  console.log(err)
-})
 });
 
 // User.findOne()
@@ -75,6 +83,9 @@ Reminder.find({date: tomorrow}).populate("user")
 //   })
 
 rtm.start()
+
+var port = process.env.PORT || 3000;
+cron.listen(port)
 
 //@terminal: heroky run npm run cron
 // heroku with freqneucy:
