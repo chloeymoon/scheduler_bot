@@ -6,8 +6,8 @@ var { User } = require('./models/models')
 
 
 var mongoose = require('mongoose')
+mongoose.connect(process.env.MONGODB_URI)
 mongoose.Promise = global.Promise;
-mongoose.connect(process.env.MONGODB_URI);
 var { User } = require('./models/models')
 
 var hbs = require('express-handlebars')({
@@ -113,6 +113,7 @@ app.post('/', function(req, res){
         calendarId: 'primary',
         resource: {
           summary: user.pending.subject,
+          attendees: //FILL THIS IN!!
           start: {
             dateTime: user.pending.date+user.pending.time,
             timeZone: 'America/Los_Angeles'

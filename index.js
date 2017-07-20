@@ -4,8 +4,8 @@ var CLIENT_EVENTS = require('@slack/client').CLIENT_EVENTS;
 var axios = require('axios')
 var { User } = require('./models/models')
 var mongoose = require('mongoose')
-mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGODB_URI);
+mongoose.Promise = global.Promise;
 var bot_token = process.env.SLACK_BOT_TOKEN || '';
 var rtm = new RtmClient(bot_token);
 var web = new WebClient(bot_token)
@@ -56,7 +56,7 @@ rtm.on("message", function(message) {
           console.log("THIS IS SLACK ID", slackId, slackId2)
           var userProfile = rtm.dataStore.getUserById(slackId2);
           // console.log("USER IS HERE", user)
-          var realName = userProfile.profile.first_name
+          var realName = userProfile.profile.first_name || userProfile.profile.real_name
           newMessage = newMessage.replace(slackId, realName)
           inviteesArr.push(slackId2)
           console.log("THIS IS NEW MESSAGE", newMessage)
@@ -80,11 +80,11 @@ rtm.on("message", function(message) {
         })
         .then(function(response) {
           //REMINDER
-          if (response.data.result.action === "reminder.add") {
+          if (response.data.result.action === "reminder.add") { ///metadata????
             if(response.data.result.actionIncomplete) {
               rtm.sendMessage(response.data.result.fulfillment.speech, message.channel)
             }
-            else if(user.pending.pending) {
+            else if(user.pending && user.pending.pending) {
               rtm.sendMessage("Please choose an option on the previous message to create a new reminder.", message.channel)
             }
             else {
