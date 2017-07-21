@@ -8,7 +8,6 @@ var { User, Reminder } = require('./models/models')
 var mongoose = require('mongoose')
 mongoose.connect(process.env.MONGODB_URI)
 mongoose.Promise = global.Promise;
-var { User } = require('./models/models')
 
 
 var hbs = require('express-handlebars')({
@@ -102,7 +101,6 @@ app.post('/', function(req, res){
   if(payload.actions[0].value === 'yes'){
     //delete date and subject from user
     User.findOne({ slackId: payload.user.id })
-
     .then(function(user) {
       console.log("USER!!!", user.google)
       var googleAuth = getGoogleAuth()

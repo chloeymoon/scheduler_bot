@@ -34,8 +34,7 @@ var reminderSchema = mongoose.Schema({
   user: {
     type: mongoose.Schema.ObjectId,
     ref: 'User'
-  },
-  channel: {}
+  }
 })
 
 
