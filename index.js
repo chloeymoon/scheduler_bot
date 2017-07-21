@@ -106,6 +106,11 @@ rtm.on("message", function(message) {
               user.pending.pending = true;
               user.pending.subject = response.data.result.parameters.subject;
               user.pending.date = response.data.result.parameters.date;
+              new Reminder({
+                subject: response.data.result.parameters.subject,
+                date: response.data.result.parameters.date,
+                user: user
+              }).save();
               user.save(function (err) {
                 if (err) {
                   console.log("ERROR!!!!")
