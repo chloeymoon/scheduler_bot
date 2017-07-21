@@ -48,6 +48,8 @@ rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, function () {
   var tomorrowmidnight = new Date(todaymidnight.getTime() + 24 * 60* 60 * 1000)
   console.log('tomorrowmidnight', tomorrowmidnight)
 
+
+
   Reminder.find({date: {$gte: todaymidnight, $lte: tomorrowmidnight}}).populate("user")
   .then(function(reminders){
     console.log('REMINDERS:::::::', reminders)
@@ -63,7 +65,7 @@ rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, function () {
     Reminder.remove({date: todaymidnight}, function(err){
       if(err){console.log('ERROR NOT SAVE')}
     })
-    return;
+    process.exit(0)
   })
   .catch(function(err){
     console.log(err)
