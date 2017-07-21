@@ -41,9 +41,9 @@ rtm.on("message", function(message) {
     .then(function(user) {
       //AUTHENTICATE GOOGLE ACCOUNT
       if(!user.google) {
-        rtm.sendMessage('Knock knock, let me in click this link' +process.env.NGROK_URL+'/connect?auth_id='+user._id, message.channel)
+        rtm.sendMessage('Knock knock, let me in click this link' +process.env.NGROK_URL+'connect?auth_id='+user._id, message.channel)
       } else if (user.google.expiry_date < Date.now()) {
-        rtm.sendMessage('Knock knock, let me in click this link' +process.env.NGROK_URL+'/connect?auth_id='+user._id, message.channel)
+        rtm.sendMessage('Knock knock, let me in click this link' +process.env.NGROK_URL+'connect?auth_id='+user._id, message.channel)
       }
       else {
         var newMessage = message.text
