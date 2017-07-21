@@ -70,11 +70,10 @@ rtm.on("message", function(message) {
           console.log("THIS IS INVITESSARR", inviteesArr)
           console.log("THIS IS EMAILS", emails)
         }
-
         user.pending.invitees = inviteesArr
-        console.log(user.pending.invitees)
+        console.log('USER PENDING INVITEEEEEEES', user.pending.invitees)
         user.pending.emails = emails
-        console.log(user.pending.emails)
+        console.log('USER PENDING EMAILS', user.pending.emails)
         user.save(function(err){
           if(err){
             console.log('error in saving invitees and emails', err)
